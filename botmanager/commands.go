@@ -82,6 +82,20 @@ var (
 			},
 			Handler: ShowPresetHandler,
 		},
+		{
+			Command: slashapi.SlashCommandJson{
+				Name:        "gemubo_bosyu",
+				Description: "募集を行います",
+				Options: []slashapi.SlashCommandOptionJson{
+					{
+						Type:        discordgo.ApplicationCommandOptionString,
+						Description: "参照するプリセット名を指定してください(一覧は`/gemubo_show_presets`で確認できます)",
+						Name:        bosyuPresetNameOptionName,
+						Required:    true,
+					},
+				},
+			},
+		},
 	}
 
 	//------------------------------------------
