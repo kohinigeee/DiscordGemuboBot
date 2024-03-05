@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"log/slog"
+	"time"
 
 	"github.com/kohinigeee/DiscordGemuboBot/botmanager"
 	"github.com/kohinigeee/DiscordGemuboBot/mylogger"
@@ -19,5 +20,6 @@ func SlashApply() {
 		if err != nil {
 			mylogger.L().Error("Error applying slash command", slog.String("err", err.Error()))
 		}
+		time.Sleep(2 * time.Second)
 	}
 }

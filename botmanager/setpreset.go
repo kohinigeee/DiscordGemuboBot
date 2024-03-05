@@ -26,7 +26,7 @@ func SetPresetHandler(s *discordgo.Session, i *discordgo.InteractionCreate, mana
 	template, exist := manager.templates[templateName]
 	if !exist {
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
 		})
 
 		errmsg := fmt.Sprintf("テンプレート `%s` は存在しません", templateName)
@@ -115,6 +115,7 @@ func makeSetPresetModal(template *gemubo.Template) *discordgo.InteractionRespons
 				Label:       "プリセット名を入力してください",
 				Placeholder: "プリセット名",
 				Style:       discordgo.TextInputShort,
+				Value:       "",
 				Required:    true,
 			},
 		},
@@ -132,7 +133,7 @@ func makeSetPresetModal(template *gemubo.Template) *discordgo.InteractionRespons
 		Components: []discordgo.MessageComponent{
 			discordgo.TextInput{
 				CustomID: "prest_normal_holders_input",
-				Label:    "プレースホルダーの値を入力してください.\n指定しない場合は空欄にしてください",
+				Label:    "「変数の値」\n指定しない場合は空欄にしてください",
 				Value:    normalHoldersContent,
 				Style:    discordgo.TextInputParagraph,
 				Required: true,
@@ -149,7 +150,7 @@ func makeSetPresetModal(template *gemubo.Template) *discordgo.InteractionRespons
 		Components: []discordgo.MessageComponent{
 			discordgo.TextInput{
 				CustomID: "prest_speial_holders_input",
-				Label:    "特殊プレースホルダーの値を入力してください指定しない場合は空欄にしてください",
+				Label:    "「特殊変数の値」.\n指定しない場合は空欄にしてください(時刻は`hh:mm`形式)",
 				Value:    speialHoldersContent,
 				Style:    discordgo.TextInputParagraph,
 				Required: true,

@@ -93,6 +93,20 @@ func parseTime(str string) (*time.Time, error) {
 	return &targetTime, nil
 }
 
+// 参照しているテンプレートのプレースホルダーが全て埋まっているかをチェックする
+func (p *Preset) IsFullTemplateParams(addtionalPram map[string]string) ([]string, bool) {
+
+	missing := []string{}
+	for pname := range p.Template.PlaeceHolders {
+		_, exist := addtionalPram[pname]
+		if !exist {
+			missing = append(missing, pname)
+		}
+	}
+
+	return missing, len(missing) == 0
+}
+
 func (p *Preset) MakeMessage(addtionalParam map[string]string, channelID string, guildID string, author *discordgo.User) (*GemuboMessage, error) {
 
 	msg := p.Template.Content
@@ -105,6 +119,13 @@ func (p *Preset) MakeMessage(addtionalParam map[string]string, channelID string,
 	if len(addtionalParam) > 0 {
 		for pname, value := range addtionalParam {
 			params[pname] = value
+		}
+	}
+
+	//特殊プレースホルダーは空白を許容するようにするため
+	for _, sp := range SpetialPlaceHolders() {
+		if _, exist := addtionalParam[sp.Name]; !exist {
+			delete(params, sp.Name)
 		}
 	}
 
@@ -123,13 +144,14 @@ func (p *Preset) MakeMessage(addtionalParam map[string]string, channelID string,
 	for pname, value := range params {
 		switch pname {
 		case startTime.Name:
-			if value != "NOW" {
-				t, err := parseTime(value)
-				if err != nil {
-					return nil, fmt.Errorf("error: 時間は\"hh:mm\"で指定してください : %w", err)
-				}
-				gmsg.StartTime = t
+			if value == "Now" {
+				break
 			}
+			t, err := parseTime(value)
+			if err != nil {
+				return nil, fmt.Errorf("error: 時間は\"hh:mm\"で指定してください : %w", err)
+			}
+			gmsg.StartTime = t
 		case title.Name:
 			gmsg.Title = value
 		case imageURL.Name:
@@ -146,12 +168,13 @@ func (p *Preset) MakeMessage(addtionalParam map[string]string, channelID string,
 	return gmsg, nil
 }
 
-func MakeEmbedBosyuMessage(gmsg *GemuboMessage) *discordgo.MessageEmbed {
+func MakeEmbedBosyuMessage(gms *GemuboMessage, botUser *discordgo.User) *discordgo.MessageEmbed {
+
 	msg := ""
-	msg += fmt.Sprintf("ID:%s\n", gmsg.GemuboID)
+	msg += fmt.Sprintf("ID:%s\n", gms.GemuboID)
 	msg += "─────────────────────────────\n"
 
-	texts := strings.Split(gmsg.Content, "\n")
+	texts := strings.Split(gms.Content, "\n")
 	for _, text := range texts {
 		if text == "" {
 			continue
@@ -160,20 +183,23 @@ func MakeEmbedBosyuMessage(gmsg *GemuboMessage) *discordgo.MessageEmbed {
 	}
 
 	embed := &discordgo.MessageEmbed{
-		Title:       gmsg.Title,
+		Title:       gms.Title,
 		Description: msg,
-		Color:       0x00ff00,
+		Color:       0x00F1AA,
+		Thumbnail: &discordgo.MessageEmbedThumbnail{
+			URL: botUser.AvatarURL("64"),
+		},
 		Author: &discordgo.MessageEmbedAuthor{
-			Name:    gmsg.Author.Username,
-			IconURL: gmsg.Author.AvatarURL("128"),
+			Name:    gms.Author.Username,
+			IconURL: gms.Author.AvatarURL("128"),
 		},
 		Image: &discordgo.MessageEmbedImage{
-			URL: gmsg.ImageURL,
+			URL: gms.ImageURL,
 		},
 	}
 
 	if embed.Title == "" {
-		embed.Title = fmt.Sprintf("%sがゲムボ！", gmsg.Author.Username)
+		embed.Title = fmt.Sprintf("%sがゲムボ！", gms.Author.Username)
 	}
 
 	return embed

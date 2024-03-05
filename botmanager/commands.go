@@ -21,6 +21,13 @@ type DiscordModalCommand struct {
 }
 
 var (
+	SlashCommands        []SlashCommand
+	InteractCommands     []InteractCommand
+	DiscordModalCommands []DiscordModalCommand
+)
+
+func init() {
+
 	SlashCommands = []SlashCommand{
 		{
 			Command: slashapi.SlashCommandJson{
@@ -40,7 +47,7 @@ var (
 		{
 			Command: slashapi.SlashCommandJson{
 				Name:        "gemubo_show_templates",
-				Description: "登録されているテンプレートを表示します(テンプレート名を指定すると，そのテンプレートの詳細を表示します)",
+				Description: "登録されているテンプレートを表示します.\n(テンプレート名を指定すると，そのテンプレートの詳細を表示します)",
 				Options: []slashapi.SlashCommandOptionJson{
 					{
 						Type:        discordgo.ApplicationCommandOptionString,
@@ -59,7 +66,7 @@ var (
 				Options: []slashapi.SlashCommandOptionJson{
 					{
 						Type:        discordgo.ApplicationCommandOptionString,
-						Description: "参照するテンプレート名を指定してください(一覧は`/gemubo_show_templates`で確認できます)",
+						Description: "参照するテンプレート名を指定してください.\n(一覧は`/gemubo_show_templates`で確認できます)",
 						Name:        setPresetTemplateOptionName,
 						Required:    true,
 					},
@@ -70,7 +77,7 @@ var (
 		{
 			Command: slashapi.SlashCommandJson{
 				Name:        "gemubo_show_presets",
-				Description: "登録されているプリセットを表示します(プリセット名を指定すると，そのプリセットの詳細を表示します)",
+				Description: "登録されているプリセットを表示します.\n(プリセット名を指定すると，そのプリセットの詳細を表示します)",
 				Options: []slashapi.SlashCommandOptionJson{
 					{
 						Type:        discordgo.ApplicationCommandOptionString,
@@ -95,6 +102,51 @@ var (
 					},
 				},
 			},
+			Handler: BosyuHandler,
+		},
+		{
+			Command: slashapi.SlashCommandJson{
+				Name:        "gemubo_show_bosyu",
+				Description: "募集中のリストを表示します",
+			},
+			Handler: ShowBosyuHandler,
+		},
+		{
+			Command: slashapi.SlashCommandJson{
+				Name:        "gemubo_remove_preset",
+				Description: "プリセットを削除します",
+				Options: []slashapi.SlashCommandOptionJson{
+					{
+						Type:        discordgo.ApplicationCommandOptionString,
+						Description: "削除するプリセット名を指定してください(一覧は`/gemubo_show_presets`で確認できます)",
+						Name:        deletePresetOptionName,
+						Required:    true,
+					},
+				},
+			},
+			Handler: DeletePresetHandler,
+		},
+		{
+			Command: slashapi.SlashCommandJson{
+				Name:        "gemubo_remove_template",
+				Description: "テンプレートを削除します.\n(※対象テンプレートを参照するプリセットも削除されます)",
+				Options: []slashapi.SlashCommandOptionJson{
+					{
+						Type:        discordgo.ApplicationCommandOptionString,
+						Description: "削除するテンプレート名を指定してください\n(一覧は`/gemubo_show_templates`で確認できます)",
+						Name:        DeleteTemplateOptionName,
+						Required:    true,
+					},
+				},
+			},
+			Handler: DeleteTemplateHandler,
+		},
+		{
+			Command: slashapi.SlashCommandJson{
+				Name:        "gemubo_help",
+				Description: "ヘルプを表示します",
+			},
+			Handler: HelpHandler,
 		},
 	}
 
@@ -111,8 +163,12 @@ var (
 			Name:    SetPresetModalName,
 			Handler: SetPrestModalHandler,
 		},
+		{
+			Name:    BosyuModalName,
+			Handler: BosyuModalHandler,
+		},
 	}
-)
+}
 
 func InitialSlashCommands() []SlashCommand {
 	return SlashCommands

@@ -18,7 +18,7 @@ const (
 func SetTemplateHandler(s *discordgo.Session, i *discordgo.InteractionCreate, manager *BotManager) {
 
 	logger := mylogger.L()
-	logger.Debug("SetTemplateHandler started", slog.String("user", fmt.Sprintf("%+v", i.User)))
+	logger.Debug("SetTemplateHandler started", slog.String("user", fmt.Sprintf("%+v", i.Member.User.Username)), slog.String("ID", i.ID), slog.String("InteractionID", i.Interaction.ID))
 
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseModal,
@@ -41,9 +41,9 @@ func SetTemplateHandler(s *discordgo.Session, i *discordgo.InteractionCreate, ma
 					Components: []discordgo.MessageComponent{
 						discordgo.TextInput{
 							CustomID:    "set_template_input",
-							Label:       "テンプレートを入力してください",
+							Label:       "テンプレート内容(`$`で始めるとワードは変数になります. 例: `$GAME`)",
 							Style:       discordgo.TextInputParagraph,
-							Placeholder: "テンプレート",
+							Placeholder: "[テンプレート例]\nゲーム: $GAMES\n人数 : $PEOPLE\n開始: $START_TIME\n",
 							Required:    true,
 						},
 					},
@@ -62,7 +62,8 @@ func SetTemplateHandler(s *discordgo.Session, i *discordgo.InteractionCreate, ma
 func SetTemplateModalHandler(s *discordgo.Session, i *discordgo.InteractionCreate, manager *BotManager) {
 
 	logger := mylogger.L()
-	logger.Debug("SetTemplateModalHandler started")
+	logger.Debug("SetTemplateModalHandler started", slog.String("ID", i.ID), slog.String("InteractionID", i.Interaction.ID))
+
 	data := i.ModalSubmitData()
 	templateName := lib.GetModalDataValue(&data, 0, 0)
 	content := lib.GetModalDataValue(&data, 1, 0)
@@ -81,7 +82,6 @@ func SetTemplateModalHandler(s *discordgo.Session, i *discordgo.InteractionCreat
 
 	msg := fmt.Sprintf("\nテンプレート `%s` を設定しました", templateName)
 	manager.SendNormalMessage(i.ChannelID, "Set Template", msg, nil)
-	logger.Info("Template has been set", slog.String("templateName", templateName), slog.String("params", fmt.Sprintf("%+v", template.PlaeceHolders)))
 
 	logger.Debug("SetTemplateModalHandler ended")
 }
