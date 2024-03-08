@@ -58,7 +58,7 @@ func BosyuHandler(s *discordgo.Session, i *discordgo.InteractionCreate, manager 
 	}
 	//メモリリークを防ぐために，一定時間後に削除する
 	go func() {
-		time.Sleep(45 * time.Second)
+		time.Sleep(300 * time.Second)
 		delete(mem, i.ID)
 	}()
 
